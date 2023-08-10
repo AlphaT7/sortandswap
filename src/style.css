@@ -5,39 +5,85 @@
     box-sizing: border-box;
   }
 
+  :root {
+    --bodyBG: #DCD5CC;
+    --sectionBG: #7DA1B5;
+    --listItem: #3C5D70;
+    --dragActive: #181C1B;
+    --headerBG: linear-gradient(to right, #31602a, #3d7135, #4a8241, #57944d, #64a65a);
+  }
+
   html,
   body {
     margin: 0;
     padding: 0;
-    display: flex;
     justify-content: center;
     align-items: center;
     width: 100%;
     height: 100%;
+    background-color: var(--bodyBG);
+    font-family: "Poppins";
   }
 
-  section {
+  header {
+    background-image: var(--headerBG);
+    height: 130px;
+    width: 100%;
+    display: flex;
+    justify-content: left;
+    align-items: center;
+    border: 2px solid #000;
+  }
+
+  header section {
+    width: fit-content;
+    padding: 20px 95px 20px 20px;
+    border: 2px dashed silver;
+    border-radius: 5px;
+    flex-grow: 1;
+    display: flex;
+    justify-content: left;
+    align-items: center;
+    margin: 0 15px 0 15px;
+  }
+
+  header section img {
+    width: 100%;
+    max-width: 85px;
+    height: 100%;
+    max-height: 40px;
+    filter: drop-shadow(3px 3px 2px rgba(0, 0, 0, 0.35));
+    margin: 0 85px 0 0;
+  }
+
+  header section h1 {
+    color: var(--bodyBG);
+    font-size: 2em;
+    margin: 0;
+    text-shadow: 0px 0px 10px rgba(0, 0, 0, .55);
+  }
+
+  main {
+    display: flex;
+    flex-flow: column;
+    align-items: center;
+  }
+
+  main section {
+    margin: 12px;
     width: 280px;
     height: auto;
-    background: #5ab9c1;
+    background-color: var(--sectionBG);
     color: #fff;
     border: 1px solid silver;
-    position: absolute;
     border-radius: 3px;
     border-style: inset;
     padding: 10px;
   }
 
-  section h1 {
-    text-align: center;
-    color: #007b83;
-    text-shadow: 0px 0px 10px rgba(255, 255, 255, 1);
-  }
-
   .draggable {
-    border-radius: 3px;
     border: 1px solid #fff;
-    margin: 10px;
+    margin: 1px;
     padding: 0.5em;
     text-align: center;
     cursor: grab;
@@ -46,6 +92,7 @@
     justify-content: space-between;
     color: #fff;
     transition: all 0.35s;
+    background-color: var(--listItem);
   }
 
   .draggable span:nth-child(2) {
@@ -53,13 +100,35 @@
   }
 
   .dragActive {
-    background: rgba(255, 255, 255, 0.79);
-    color: #000;
+    background: rgba(255, 255, 255, 0);
+    background-color: var(--dragActive);
+    color: #fff;
     border: 1px solid silver;
     border-style: inset;
+    transform: translateX(3px);
   }
 
   .icon {
     font-size: 1.5em;
     font-family: "Material Icons", sans-serif;
+  }
+
+  @media screen and (max-width: 400px) {
+
+    header {
+      justify-content: center;
+    }
+
+    header section {
+      padding: 15px;
+    }
+
+    header section img {
+      margin-right: 25px;
+    }
+
+    header section h1 {
+      font-size: 1.25em;
+    }
+
   }

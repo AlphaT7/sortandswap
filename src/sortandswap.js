@@ -2,10 +2,12 @@ const log = console.log.bind(console);
 const $ = document.querySelector.bind(document);
 
 const SortAndSwap = class {
-  constructor(containerId, dragActiveClass, sortOrSwap) {
-    this.container = "#" + containerId;
-    this.dragActiveClass = dragActiveClass;
-    this.type = sortOrSwap;
+  constructor(dataObj) {
+    this.container = $("#" + dataObj.containerId);
+    this.dragActiveClass = dataObj.dragActiveClass;
+    this.type = dataObj.sortOrSwap;
+    this.storage = dataObj.useLocalStorage;
+    this.dragActiveIndex = "";
   }
 
   dropZone(e) {
@@ -18,29 +20,24 @@ const SortAndSwap = class {
     return $(`[data-sortindex='${i}']`);
   }
 
-  addListeners(el) {
-    el.addEventListener("dragover", (e) => {
-      e.preventDefault();
-      this.dropZone(e).classList.add(this.dragActiveClass);
+  getListItemsOrder() {
+    let arr1 = [];
+    [...this.container.children].forEach((el, i) => {
+      arr1[i] = [el.dataset.sortindex];
     });
-    el.addEventListener("dragstart", (e) => {
-      e.dataTransfer.setData("text/plain", this.dropZone(e).dataset.sortindex);
-    });
-    el.addEventListener("dragleave", (e) => {
-      this.dropZone(e).classList.remove(this.dragActiveClass);
-    });
-    el.addEventListener("dragend", (e) => {
-      this.dropZone(e).classList.remove(this.dragActiveClass);
-    });
-    el.addEventListener("drop", (e) => {
-      e.preventDefault();
-      let i = e.dataTransfer.getData("text/plain");
-      this.dropZone(e).classList.remove(this.dragActiveClass);
-      this.dropHandler(this.dropZone(e), this.dragZone(i));
-    });
+    return arr1.join(",");
   }
 
-  dropHandler(dropTarget, dragTarget) {
+  setLocalStorage() {
+    let str = this.getListItemsOrder();
+    localStorage.setItem(this.container.id, str);
+  }
+
+  getLocalStorage() {
+    return localStorage.getItem(this.container.id);
+  }
+
+  changeHandler(dropTarget, dragTarget) {
     let dragSortIndex = +dragTarget.dataset.sortindex;
     let dropSortIndex = +dropTarget.dataset.sortindex;
 
@@ -86,6 +83,40 @@ const SortAndSwap = class {
     };
 
     orderBy[this.type]();
+    this.setLocalStorage();
+  }
+
+  exchange(e) {
+    if (this.dragZone(this.dragActiveIndex) != this.dropZone(e)) {
+      this.dropZone(e).classList.remove(this.dragActiveClass);
+      this.changeHandler(this.dropZone(e), this.dragZone(this.dragActiveIndex));
+    }
+  }
+
+  addListeners(el) {
+    el.addEventListener("dragover", (e) => {
+      e.preventDefault();
+      this.dropZone(e).classList.add(this.dragActiveClass);
+    });
+    el.addEventListener("dragstart", (e) => {
+      e.dataTransfer.setData("text/plain", this.dropZone(e).dataset.sortindex);
+      el.classList.add(this.dragActiveClass);
+      this.dragActiveIndex = this.dropZone(e).dataset.sortindex;
+    });
+    el.addEventListener("dragenter", (e) => {
+      e.preventDefault();
+      if (this.type == "sort") this.exchange(e);
+    });
+    el.addEventListener("dragleave", (e) => {
+      this.dropZone(e).classList.remove(this.dragActiveClass);
+    });
+    el.addEventListener("dragend", (e) => {
+      this.dropZone(e).classList.remove(this.dragActiveClass);
+    });
+    el.addEventListener("drop", (e) => {
+      e.preventDefault();
+      if (this.type == "swap") this.exchange(e);
+    });
   }
 
   init() {
@@ -94,6 +125,22 @@ const SortAndSwap = class {
       el.dataset.sortindex = i;
       this.addListeners(el);
     });
+
+    if (this.storage) {
+      let storageData = localStorage.getItem(this.container.id);
+      if (storageData == null) {
+        this.setLocalStorage();
+      } else {
+        let order = storageData.split(",");
+        let children = [...this.container.children];
+        let nodeList = [];
+        for (let i = 0; i < children.length; i++) {
+          nodeList.push(children[order[i]]);
+        }
+        this.container.innerHTML = "";
+        nodeList.forEach((el) => this.container.append(el));
+      }
+    }
   }
 };
 

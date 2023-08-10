@@ -1,30 +1,55 @@
-# Project Title
+![Logo](https://alphat7.github.io/sortandswap/src/images/logo.png)
 
-SortAndSwap.js is an open source project designed to make drag & drop list sorting or swaping easy on any screen. (Chrome/Edge/Safari)
+# Sort And Swap
+
+SortAndSwap.js is an open source project designed to make drag & drop list sorting or swapping easy on any screen. (Chrome/Edge/Safari)
 
 ## Usage/Examples
 
-### To Sort:
+### Options
 
 ```javascript
-import SortAndSwap from "/path/to/sortandswap.js";
-
-let newList = new SortAndSwap("containerId", "dragActiveClass", "sort");
-newList.init();
+{
+  containerId: String, // string containing the HTML Id attribute of the list items parent element
+  dragActiveClass: String, // string containing the CSS className of for drag-active list items
+  sortOrSwap: String, // string clarifying either "sort" or "swap" functionality
+  useLocalStorage: Boolean, // boolean to enable loading the last used order from LocalStorage on page load
+}
 ```
 
-### To Swap:
+### Sort Example:
 
 ```javascript
 import SortAndSwap from "/path/to/sortandswap.js";
 
-let newList = new SortAndSwap("containerId", "dragActiveClass", "swap");
-newList.init();
+let sortList = new SortAndSwap({
+  containerId: "container",
+  dragActiveClass: "dragActive",
+  sortOrSwap: "sort",
+  useLocalStorage: false,
+});
+
+sortList.init();
+```
+
+### Swap Example:
+
+```javascript
+import SortAndSwap from "./sortandswap.js";
+
+let swapList = new SortAndSwap({
+  containerId: "container",
+  dragActiveClass: "dragActive",
+  sortOrSwap: "swap",
+  useLocalStorage: false,
+});
+
+swapList.init();
 ```
 
 ## Demo
 
-Insert gif or link to demo
+https://alphat7.github.io/sortandswap/src/index.html
 
 ## Authors
 
