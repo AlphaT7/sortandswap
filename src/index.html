@@ -6,7 +6,8 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <link rel="shortcut icon" href="images/favicon.ico" type="image/x-icon">
   <link rel="stylesheet" href="style.css">
-  <script src="main.js" type="module"></script>
+  <script src="./sortandswap.js" defer></script>
+  <script src="./main.js" defer></script>
   <title>SortAndSwap.js</title>
 </head>
 
@@ -21,40 +22,57 @@
   </header>
   <main>
     <section>
-      <div id="container">
-        <div class="draggable">
+      <ul id="container">
+        <li class="draggable">
           <span class="icon">
             drag_handle
           </span>
           <span>
             List Item # 1
           </span>
-        </div>
-        <div class="draggable">
+        </li>
+        <li class="draggable">
           <span class="icon">
             drag_handle
           </span>
           <span>
             List Item # 2
           </span>
-        </div>
-        <div class="draggable">
+        </li>
+        <li class="draggable">
           <span class="icon">
             drag_handle
           </span>
           <span>
             List Item # 3
           </span>
-        </div>
-        <div class="draggable">
+        </li>
+        <li class="draggable">
           <span class="icon">
             drag_handle
           </span>
           <span>
             List Item # 4
           </span>
-        </div>
-      </div>
+        </li>
+      </ul>
+    </section>
+    <section>
+      <div id="example"></div>
+      <script type="module">
+        import sdk from 'https://unpkg.com/@stackblitz/sdk@1/bundles/sdk.m.js';
+
+        sdk.embedProjectId(
+          'example',
+          'sortandswap-sortable-list',
+          {
+            forceEmbedLayout: false,
+            openFile: 'index.html',
+            view: 'preview',
+            height: 500,
+          }
+        );
+      </script>
     </section>
   </main>
   <footer></footer>

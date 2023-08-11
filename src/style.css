@@ -71,14 +71,19 @@
 
   main section {
     margin: 12px;
-    width: 280px;
+    width: 100%;
+    max-width: 500px;
     height: auto;
-    background-color: var(--sectionBG);
+    /* background-color: var(--sectionBG); */
     color: #fff;
     border: 1px solid silver;
     border-radius: 3px;
     border-style: inset;
     padding: 10px;
+  }
+
+  main section #container {
+    padding: 0;
   }
 
   .draggable {

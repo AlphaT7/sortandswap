@@ -143,3 +143,5 @@ const SortAndSwap = class {
     }
   }
 };
+
+export default SortAndSwap;
