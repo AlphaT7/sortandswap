@@ -99,9 +99,14 @@ const SortAndSwap = class {
       this.dropZone(e).classList.add(this.dragActiveClass);
     });
     el.addEventListener("dragstart", (e) => {
-      e.dataTransfer.setData("text/plain", this.dropZone(e).dataset.sortindex);
-      el.classList.add(this.dragActiveClass);
       this.dragActiveIndex = this.dropZone(e).dataset.sortindex;
+      if (this.dragZone(this.dragActiveIndex) != this.dropZone(e)) {
+        e.dataTransfer.setData(
+          "text/plain",
+          this.dropZone(e).dataset.sortindex
+        );
+        el.classList.add(this.dragActiveClass);
+      }
     });
     el.addEventListener("dragenter", (e) => {
       e.preventDefault();

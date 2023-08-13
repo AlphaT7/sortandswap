@@ -1,6 +1,4 @@
-![Logo](https://alphat7.github.io/sortandswap/src/images/logo.png)
-
-# Sort And Swap
+![Logo](https://alphat7.github.io/sortandswap/src/images/logo.png) # Sort And Swap JS
 
 SortAndSwap.js is an open source project designed to make drag & drop list sorting or swapping easy on any screen. (Chrome/Edge/Safari)
 
