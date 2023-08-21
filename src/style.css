@@ -1,139 +1,106 @@
-  @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@500&display=swap');
-  @import url("https://fonts.googleapis.com/icon?family=Material+Icons");
+@import url("https://fonts.googleapis.com/css2?family=Rubik&display=swap");
+@import url("https://fonts.googleapis.com/icon?family=Material+Icons");
 
-  * {
-    box-sizing: border-box;
-  }
+* {
+  box-sizing: border-box;
+}
 
-  :root {
-    --bodyBG: #DCD5CC;
-    --sectionBG: #7DA1B5;
-    --listItem: #3C5D70;
-    --dragActive: #181C1B;
-    --headerBG: linear-gradient(to right, #31602a, #3d7135, #4a8241, #57944d, #64a65a);
-  }
+:root {
+  --bodyBG: #128cfc;
+  --blueHighlight: #0b5aa2;
+  --dragActiveBG: #181c1b;
+}
 
-  html,
-  body {
-    margin: 0;
-    padding: 0;
-    justify-content: center;
-    align-items: center;
-    width: 100%;
-    height: 100%;
-    background-color: var(--bodyBG);
-    font-family: "Poppins";
-  }
+html,
+body {
+  margin: 0;
+  padding: 0;
+  justify-content: center;
+  align-items: center;
+  width: 100%;
+  height: 100%;
+  background-color: var(--bodyBG);
+  font-family: "Rubik";
+}
 
-  header {
-    background-image: var(--headerBG);
-    height: 130px;
-    width: 100%;
-    display: flex;
-    justify-content: left;
-    align-items: center;
-    border: 2px solid #000;
-  }
+main section h3 {
+  margin: 15px 0 0 25px;
+  color: #0b5aa2;
+}
 
-  header section {
-    width: fit-content;
-    padding: 20px 95px 20px 20px;
-    border: 2px dashed silver;
-    border-radius: 5px;
-    flex-grow: 1;
-    display: flex;
-    justify-content: left;
-    align-items: center;
-    margin: 0 15px 0 15px;
-  }
+main section h3::after {
+  content: "";
+  margin: 10px 0 0 15px;
+  background: var(--blueHighlight);
+  display: block;
+  height: 3px;
+  width: 85px;
+}
 
-  header section img {
-    width: 100%;
-    max-width: 85px;
-    height: 100%;
-    max-height: 40px;
-    filter: drop-shadow(3px 3px 2px rgba(0, 0, 0, 0.35));
-    margin: 0 85px 0 0;
-  }
+main {
+  display: flex;
+  flex-flow: column;
+  align-items: center;
+}
 
-  header section h1 {
-    color: var(--bodyBG);
-    font-size: 2em;
-    margin: 0;
-    text-shadow: 0px 0px 10px rgba(0, 0, 0, .55);
-  }
+main section {
+  margin-top: 50px;
+  width: 100%;
+  max-width: 300px;
+  height: 350px;
+  background-color: #fff;
+  box-shadow: 0 3px 6px rgba(0, 0, 0, 0.16), 0 3px 6px rgba(0, 0, 0, 0.23);
+}
 
-  main {
-    display: flex;
-    flex-flow: column;
-    align-items: center;
-  }
+main section::before {
+  content: "";
+  background: var(--blueHighlight);
+  display: block;
+  height: 10px;
+  width: 100%;
+}
 
-  main section {
-    margin: 12px;
-    width: 100%;
-    max-width: 500px;
-    height: auto;
-    /* background-color: var(--sectionBG); */
-    color: #fff;
-    border: 1px solid silver;
-    border-radius: 3px;
-    border-style: inset;
-    padding: 10px;
-  }
+main section ul {
+  padding: 0 20px 0 20px;
+}
 
-  main section #container {
-    padding: 0;
-  }
+.draggable {
+  background-color: #fff;
+  position: relative;
+  width: 100%;
+  border-radius: 10px;
+  border: 1px dashed #000;
+  margin: 1px;
+  padding: 0.5em;
+  text-align: center;
+  cursor: grab;
+  align-items: center;
+  display: flex;
+  justify-content: space-between;
+  color: #000;
+  overflow: hidden;
+  background-color: rgba(0, 0, 0, 0);
+  user-select: none;
+}
 
-  .draggable {
-    border: 1px solid #fff;
-    margin: 1px;
-    padding: 0.5em;
-    text-align: center;
-    cursor: grab;
-    font-family: "Poppins", sans-serif;
-    display: flex;
-    justify-content: space-between;
-    color: #fff;
-    transition: all 0.35s;
-    background-color: var(--listItem);
-  }
+/* .draggable:hover {
+  border: 1px solid dodgerblue;
+} */
 
-  .draggable span:nth-child(2) {
-    flex-grow: 1;
-  }
+.draggable span:nth-child(2) {
+  flex-grow: 1;
+}
 
-  .dragActive {
-    background: rgba(255, 255, 255, 0);
-    background-color: var(--dragActive);
-    color: #fff;
-    border: 1px solid silver;
-    border-style: inset;
-    transform: translateX(3px);
-  }
+.dragActive {
+  display: none;
+  position: absolute !important;
+  border: 1px solid #000;
+  color: #000;
+  background-color: #fff;
+  opacity: 0.55;
+}
 
-  .icon {
-    font-size: 1.5em;
-    font-family: "Material Icons", sans-serif;
-  }
-
-  @media screen and (max-width: 400px) {
-
-    header {
-      justify-content: center;
-    }
-
-    header section {
-      padding: 15px;
-    }
-
-    header section img {
-      margin-right: 25px;
-    }
-
-    header section h1 {
-      font-size: 1.25em;
-    }
-
-  }
+.icon {
+  font-size: 1.5em;
+  font-family: "Material Icons", sans-serif;
+}
