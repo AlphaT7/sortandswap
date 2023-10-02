@@ -4,7 +4,7 @@ const $ = document.querySelector.bind(document);
 class SortAndSwap {
   #container;
   #sameEl;
-  #sortOrder;
+  #sortOrder = [];
   #stepCount = 0;
   #mouse = { x: 0, y: 0 };
   #elStartPoint = { x: 0, y: 0 };
@@ -17,7 +17,6 @@ class SortAndSwap {
 
   constructor(dataObj) {
     this.#container = $("#" + dataObj.containerId);
-    this.#sortOrder = [];
   }
 
   #addListeners() {
@@ -37,26 +36,49 @@ class SortAndSwap {
     return e.x >= b.left && e.x <= b.right && e.y >= b.top && e.y <= b.bottom;
   }
 
-  #updateSortOrder = (i1, i2) => {
-    let sortOrderClone = structuredClone(this.#sortOrder);
-    let i1Clone = structuredClone(this.#sortOrder)[i1].index;
-    let i2Clone = structuredClone(this.#sortOrder)[i2].index;
-    //this.#sortOrder[i1].x = this.#sortOrder[i2].x;
-    //this.#sortOrder[i1].y = objClone2.y;
-    this.#sortOrder[i1].index = i2Clone;
+  #updateSortOrder = (i1, i2, x, y) => {
+    // seems to sort correctly when dragging up, but not down;
+    // part of the problem is that in the #mouseMoveHandler
+    // it gets the node/children index of the 4 draggables, but
+    // their actual index position has not be updated yet into the
+    // DOM via the #updateDom method; which is not called until the
+    // dragged element has been "dropped"; so it throws off the
+    // sorting calculations of the #updateSortOrder function.
 
-    // this.#sortOrder[i2].x = objClone1.x;
-    //this.#sortOrder[i2].y = objClone1.y;
-    this.#sortOrder[i2].index = i1Clone;
+    let tempArr = [];
+    let tempSort = [];
+
+    for (let i = 0; i < this.#sortOrder.length; i++) {
+      tempArr.push(i);
+    }
+
+    if (y < 0) {
+      tempArr.splice(i2, 1);
+      tempArr.splice(i1, 0, i2);
+    } else {
+      tempArr.splice(i2, 1);
+      tempArr.splice(i1, 0, i2);
+    }
+
+    this.#sortOrder.forEach((el, i) => {
+      el.index = tempArr[i];
+    });
+
+    this.#sortOrder.forEach((el) => {
+      tempSort.push(el.index);
+    });
+    log(tempArr);
+    log(tempSort);
     log(this.#sortOrder);
-    //this.#sortOrder.sort((a, b) => a.index - b.index);
   };
 
   #updateDom() {
     let nodeList = [];
+
     this.#sortOrder.forEach((el) => {
       nodeList.push($(`[data-sortindex="${el.index}"]`).cloneNode(true));
     });
+
     this.#container.innerHTML = "";
     nodeList.forEach((el) => {
       this.#container.append(el);
@@ -96,20 +118,21 @@ class SortAndSwap {
         el2Y =
           parseInt(getComputedStyle(el2).height) +
           parseInt(getComputedStyle(el2).marginTop),
-        I1 = this.#sortOrder.find((i) => i.index == el1.dataset.sortindex),
-        I2 = this.#sortOrder.find((i) => i.index == el2.dataset.sortindex);
+        // I1 = this.#sortOrder.find((i) => i.index == el1.dataset.sortindex),
+        // I2 = this.#sortOrder.find((i) => i.index == el2.dataset.sortindex), /// <---- causing problems
+        I1 = (() => [...el1.parentNode.children].indexOf(el1))(),
+        I2 = (() => [...el2.parentNode.children].indexOf(el2))();
 
       if (e.y < this.#mouse.y) {
         log("up");
-        el1.style.translate = "0px " + el1Y + "px";
-        el2.style.translate =
-          "0px " + (-el2Y - el2Y * (I2.index - I1.index - 1)) + "px";
-        this.#updateSortOrder(I1.index, I2.index);
+        // el1.style.translate = "0px " + el1Y + "px";
+        // el2.style.translate = "0px " + (-el2Y - el2Y * (I2 - I1 - 1)) + "px";
+        // this.#updateSortOrder(I1, I2);
       } else if (e.y > this.#mouse.y) {
         log("down");
-        //el1.style.translate = "0px " + -el1Y + "px";
-        //el2.style.translate = "0px " + (el2Y + el2Y * (I1.index - 1)) + "px";
-        //this.#updateSortOrder(I2, I1);
+        el1.style.translate = "0px " + -el1Y + "px";
+        el2.style.translate = "0px " + (el2Y + el2Y * (I1 - 1)) + "px";
+        this.#updateSortOrder(I2, I1, 0, 1);
       }
     });
 
@@ -165,6 +188,7 @@ class SortAndSwap {
     this.#container.style.position = "relative";
     [...this.#container.children].forEach((el, i) => {
       el.dataset.sortindex = i;
+      el.dataset.index = i;
       el.addEventListener("mousedown", (e) => this.#mouseDownHandler(e, el));
       el.addEventListener("mouseover", (e, el) =>
         this.#mouseOverHandler(e, el)
