@@ -4,9 +4,12 @@ const $ = document.querySelector.bind(document);
 class SortAndSwap {
   #container;
   #sameEl;
+  #domNodeList = [];
   #sortOrder = [];
   #stepCount = 0;
-  #mouse = { x: 0, y: 0 };
+  #currentDragIndex = undefined;
+  #currentDropIndex = undefined;
+  #pointer = { x: 0, y: 0 };
   #elStartPoint = { x: 0, y: 0 };
   #dragDisplayProperty;
   #dragWidthProperty;
@@ -36,7 +39,7 @@ class SortAndSwap {
     return e.x >= b.left && e.x <= b.right && e.y >= b.top && e.y <= b.bottom;
   }
 
-  #updateSortOrder = (i1, i2, x, y) => {
+  #updateSortOrder = (x, y) => {
     // seems to sort correctly when dragging up, but not down;
     // part of the problem is that in the #mouseMoveHandler
     // it gets the node/children index of the 4 draggables, but
@@ -45,42 +48,47 @@ class SortAndSwap {
     // dragged element has been "dropped"; so it throws off the
     // sorting calculations of the #updateSortOrder function.
 
+    //>>>> ABOVE has been fixed.
+
+    this.#currentDragIndex;
+
+    this.#domNodeList;
+
     let tempArr = [];
-    let tempSort = [];
 
     for (let i = 0; i < this.#sortOrder.length; i++) {
       tempArr.push(i);
     }
 
+    // this is where it is messing up; not being spliced correctly.
     if (y < 0) {
-      tempArr.splice(i2, 1);
-      tempArr.splice(i1, 0, i2);
     } else {
-      tempArr.splice(i2, 1);
-      tempArr.splice(i1, 0, i2);
+      tempArr.splice(this.#currentDragIndex, 1);
+      tempArr.splice(this.#currentDropIndex, 0, this.#currentDragIndex);
     }
 
     this.#sortOrder.forEach((el, i) => {
       el.index = tempArr[i];
     });
 
-    this.#sortOrder.forEach((el) => {
-      tempSort.push(el.index);
-    });
-    log(tempArr);
-    log(tempSort);
-    log(this.#sortOrder);
+    this.#currentDragIndex = this.#currentDropIndex;
+    this.#currentDropIndex++;
+
+    this.#reOrderDom();
   };
 
-  #updateDom() {
-    let nodeList = [];
-
-    this.#sortOrder.forEach((el) => {
-      nodeList.push($(`[data-sortindex="${el.index}"]`).cloneNode(true));
+  #reOrderDom() {
+    this.#domNodeList.length = 0;
+    this.#sortOrder.forEach((indexObj) => {
+      this.#domNodeList.push(
+        $(`[data-sortindex="${indexObj.index}"]`).cloneNode(true)
+      );
     });
+  }
 
+  #updateDom() {
     this.#container.innerHTML = "";
-    nodeList.forEach((el) => {
+    this.#domNodeList.forEach((el) => {
       this.#container.append(el);
     });
 
@@ -108,31 +116,40 @@ class SortAndSwap {
       // exit if it is multiple mouse move events on the same pair of elements
       if (prevStep == this.#stepCount || this.#stepCount < 1) return;
 
-      let el1 = el,
-        el2 = this.#cloneOrigin,
-        el1X = el1.style.width,
-        el1Y =
-          parseInt(getComputedStyle(el1).height) +
-          parseInt(getComputedStyle(el1).marginTop),
-        el2X = el2.style.width,
-        el2Y =
-          parseInt(getComputedStyle(el2).height) +
-          parseInt(getComputedStyle(el2).marginTop),
-        // I1 = this.#sortOrder.find((i) => i.index == el1.dataset.sortindex),
-        // I2 = this.#sortOrder.find((i) => i.index == el2.dataset.sortindex), /// <---- causing problems
-        I1 = (() => [...el1.parentNode.children].indexOf(el1))(),
-        I2 = (() => [...el2.parentNode.children].indexOf(el2))();
+      let dropOriginEl = el;
+      let dragOriginEl = this.#cloneOrigin;
+      let el1X = dropOriginEl.style.width;
+      let el1Y =
+        parseInt(getComputedStyle(dropOriginEl).height) +
+        parseInt(getComputedStyle(dropOriginEl).marginTop);
+      let el2X = dragOriginEl.style.width;
+      let el2Y =
+        parseInt(getComputedStyle(dragOriginEl).height) +
+        parseInt(getComputedStyle(dragOriginEl).marginTop);
+      // I1 = this.#sortOrder.find((i) => i.index == el1.dataset.sortindex),
+      // I2 = this.#sortOrder.find((i) => i.index == el2.dataset.sortindex), /// <---- causing problems
+      this.#currentDropIndex =
+        undefined ??
+        [...dropOriginEl.parentNode.children].indexOf(dropOriginEl);
+      // currentDropIndex AND currentDragIndex are the problem; they are not being updated between mouse move events; they're
+      // using the index placement of the drag/drop elements in it's container before it's been updated
+      // every time.
+      this.#currentDragIndex =
+        undefined ??
+        [...dragOriginEl.parentNode.children].indexOf(dragOriginEl);
 
-      if (e.y < this.#mouse.y) {
+      if (e.y < this.#pointer.y) {
         log("up");
         // el1.style.translate = "0px " + el1Y + "px";
         // el2.style.translate = "0px " + (-el2Y - el2Y * (I2 - I1 - 1)) + "px";
         // this.#updateSortOrder(I1, I2);
-      } else if (e.y > this.#mouse.y) {
+      } else if (e.y > this.#pointer.y) {
         log("down");
-        el1.style.translate = "0px " + -el1Y + "px";
-        el2.style.translate = "0px " + (el2Y + el2Y * (I1 - 1)) + "px";
-        this.#updateSortOrder(I2, I1, 0, 1);
+
+        dropOriginEl.style.translate = "0px " + -el1Y + "px";
+        dragOriginEl.style.translate =
+          "0px " + (el2Y + el2Y * (this.#currentDropIndex - 1)) + "px";
+        this.#updateSortOrder(0, 1);
       }
     });
 
@@ -142,8 +159,8 @@ class SortAndSwap {
     this.#dragEl.style.width = this.#dragWidthProperty;
     this.#dragEl.style.height = this.#dragHeightProperty;
 
-    const offSetX = e.x - this.#mouse.x;
-    const offSetY = e.y - this.#mouse.y;
+    const offSetX = e.x - this.#pointer.x;
+    const offSetY = e.y - this.#pointer.y;
 
     this.#dragEl.style.left = this.#elStartPoint.x + offSetX + "px";
     this.#dragEl.style.top = this.#elStartPoint.y + offSetY + "px";
@@ -167,8 +184,8 @@ class SortAndSwap {
 
     this.#dragEl = clone;
     this.#dragInMotion = true;
-    this.#mouse.x = e.x;
-    this.#mouse.y = e.y;
+    this.#pointer.x = e.x;
+    this.#pointer.y = e.y;
     this.#elStartPoint.x = el.offsetLeft;
     this.#elStartPoint.y = el.offsetTop;
   }
@@ -188,7 +205,6 @@ class SortAndSwap {
     this.#container.style.position = "relative";
     [...this.#container.children].forEach((el, i) => {
       el.dataset.sortindex = i;
-      el.dataset.index = i;
       el.addEventListener("mousedown", (e) => this.#mouseDownHandler(e, el));
       el.addEventListener("mouseover", (e, el) =>
         this.#mouseOverHandler(e, el)
