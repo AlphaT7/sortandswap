@@ -40,51 +40,28 @@ class SortAndSwap {
   }
 
   #updateSortOrder = (x, y) => {
-    // seems to sort correctly when dragging up, but not down;
-    // part of the problem is that in the #mouseMoveHandler
-    // it gets the node/children index of the 4 draggables, but
-    // their actual index position has not be updated yet into the
-    // DOM via the #updateDom method; which is not called until the
-    // dragged element has been "dropped"; so it throws off the
-    // sorting calculations of the #updateSortOrder function.
+    let tempDragNode =
+      this.#domNodeList[this.#currentDragIndex].cloneNode(true);
+    let tempDropNode =
+      this.#domNodeList[this.#currentDropIndex].cloneNode(true);
 
-    //>>>> ABOVE has been fixed.
-
-    this.#currentDragIndex;
-
-    this.#domNodeList;
-
-    let tempArr = [];
-
-    for (let i = 0; i < this.#sortOrder.length; i++) {
-      tempArr.push(i);
-    }
-
-    // this is where it is messing up; not being spliced correctly.
     if (y < 0) {
+      this.#domNodeList.splice(this.#currentDragIndex, 1);
+      this.#domNodeList.splice(this.#currentDropIndex, 0, tempDragNode);
     } else {
-      tempArr.splice(this.#currentDragIndex, 1);
-      tempArr.splice(this.#currentDropIndex, 0, this.#currentDragIndex);
+      this.#domNodeList.splice(this.#currentDragIndex, 1);
+      this.#domNodeList.splice(this.#currentDropIndex, 0, tempDragNode);
     }
 
-    this.#sortOrder.forEach((el, i) => {
-      el.index = tempArr[i];
-    });
+    // this.#domNodeList.forEach((el) => {
+    //   log(el.innerText);
+    // });
 
     this.#currentDragIndex = this.#currentDropIndex;
-    this.#currentDropIndex++;
-
-    this.#reOrderDom();
+    this.#currentDropIndex = this.#domNodeList.findIndex(
+      (el) => el.innerHTML == tempDropNode.innerHTML
+    );
   };
-
-  #reOrderDom() {
-    this.#domNodeList.length = 0;
-    this.#sortOrder.forEach((indexObj) => {
-      this.#domNodeList.push(
-        $(`[data-sortindex="${indexObj.index}"]`).cloneNode(true)
-      );
-    });
-  }
 
   #updateDom() {
     this.#container.innerHTML = "";
@@ -118,39 +95,56 @@ class SortAndSwap {
 
       let dropOriginEl = el;
       let dragOriginEl = this.#cloneOrigin;
+
       let el1X = dropOriginEl.style.width;
-      let el1Y =
+      let dropElHeight =
         parseInt(getComputedStyle(dropOriginEl).height) +
-        parseInt(getComputedStyle(dropOriginEl).marginTop);
+        parseInt(getComputedStyle(dropOriginEl).marginTop) +
+        parseInt(getComputedStyle(dropOriginEl).marginBottom);
       let el2X = dragOriginEl.style.width;
-      let el2Y =
+      let dragElHeight =
         parseInt(getComputedStyle(dragOriginEl).height) +
-        parseInt(getComputedStyle(dragOriginEl).marginTop);
-      // I1 = this.#sortOrder.find((i) => i.index == el1.dataset.sortindex),
-      // I2 = this.#sortOrder.find((i) => i.index == el2.dataset.sortindex), /// <---- causing problems
-      this.#currentDropIndex =
-        undefined ??
-        [...dropOriginEl.parentNode.children].indexOf(dropOriginEl);
-      // currentDropIndex AND currentDragIndex are the problem; they are not being updated between mouse move events; they're
-      // using the index placement of the drag/drop elements in it's container before it's been updated
-      // every time.
-      this.#currentDragIndex =
-        undefined ??
-        [...dragOriginEl.parentNode.children].indexOf(dragOriginEl);
+        parseInt(getComputedStyle(dragOriginEl).marginTop) +
+        parseInt(getComputedStyle(dragOriginEl).marginBottom);
+
+      this.#currentDropIndex = this.#domNodeList.findIndex(
+        (el) => dropOriginEl.innerHTML == el.innerHTML
+      );
+      this.#currentDragIndex = this.#domNodeList.findIndex(
+        (el) => dragOriginEl.innerHTML == el.innerHTML
+      );
+
+      let dragOriginElIndex = [...this.#container.children].findIndex(
+        (el) => el.innerHTML == dragOriginEl.innerHTML
+      );
 
       if (e.y < this.#pointer.y) {
         log("up");
-        // el1.style.translate = "0px " + el1Y + "px";
+
         // el2.style.translate = "0px " + (-el2Y - el2Y * (I2 - I1 - 1)) + "px";
-        // this.#updateSortOrder(I1, I2);
+        log(
+          -dragElHeight -
+            dragElHeight * (dragOriginElIndex - this.#currentDragIndex)
+        );
+        dropOriginEl.style.translate = "0px " + dropElHeight + "px";
+        dragOriginEl.style.translate =
+          "0px " +
+          (
+            -dragElHeight -
+            dragElHeight * (dragOriginElIndex - this.#currentDragIndex)
+          ).toString() +
+          "px";
       } else if (e.y > this.#pointer.y) {
         log("down");
 
-        dropOriginEl.style.translate = "0px " + -el1Y + "px";
+        dropOriginEl.style.translate = "0px " + -dropElHeight + "px";
         dragOriginEl.style.translate =
-          "0px " + (el2Y + el2Y * (this.#currentDropIndex - 1)) + "px";
-        this.#updateSortOrder(0, 1);
+          "0px " +
+          (dragElHeight + dragElHeight * (this.#currentDropIndex - 1)) +
+          "px";
       }
+
+      this.#updateSortOrder(0, e.y);
     });
 
     /* handling of the drag ghost element movement */
@@ -204,6 +198,7 @@ class SortAndSwap {
   init() {
     this.#container.style.position = "relative";
     [...this.#container.children].forEach((el, i) => {
+      this.#domNodeList.push(el.cloneNode(true));
       el.dataset.sortindex = i;
       el.addEventListener("mousedown", (e) => this.#mouseDownHandler(e, el));
       el.addEventListener("mouseover", (e, el) =>
