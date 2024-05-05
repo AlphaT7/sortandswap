@@ -25,10 +25,7 @@ class SortAndSwap {
   #addListeners() {
     [...this.#container.children].forEach((el, i) => {
       el.dataset.sortindex = i;
-      el.addEventListener("mousedown", (e) => this.#mouseDownHandler(e, el));
-      el.addEventListener("mouseover", (e, el) =>
-        this.#mouseOverHandler(e, el)
-      );
+      el.addEventListener("mousedown", (e) => this.#pointerDownHandler(e, el));
       el.style.translate = "0px 0px";
       el.style.transition = "translate 0.35s ease-out";
     });
@@ -72,40 +69,41 @@ class SortAndSwap {
     this.#addListeners();
   }
 
-  #mouseMoveHandler(e) {
+  #pointerMoveHandler(e) {
     /* handling of mouse movement over other #container children */
     if (!this.#dragInMotion) return;
-    [...this.#container.children].forEach((el, i, arr) => {
+    [...this.#container.children].forEach((containerChild, i, arr) => {
       // if it's on the last element in the array, exit because it's the drag ghost element;
       if (i == arr.length - 1) return;
       // if the dragged clone is over the original element that was cloned for dragging, exit;
-      if (el.dataset.sortindex == this.#cloneOrigin.dataset.sortindex) return;
+      if (
+        containerChild.dataset.sortindex == this.#cloneOrigin.dataset.sortindex
+      )
+        return;
       // if is is not in one of the container elements boundaries, then exit;
-      if (!this.#isInBoundary(e, el)) return;
+      if (!this.#isInBoundary(e, containerChild)) return;
 
       let prevStep = this.#stepCount;
 
-      if (this.#sameEl != el) {
-        this.#sameEl = el;
+      if (this.#sameEl != containerChild) {
+        this.#sameEl = containerChild;
         this.#stepCount++;
       }
 
       // exit if it is multiple mouse move events on the same pair of elements
       if (prevStep == this.#stepCount || this.#stepCount < 1) return;
 
-      let dropOriginEl = el;
+      let dropOriginEl = containerChild;
       let dragOriginEl = this.#cloneOrigin;
 
       let el1X = dropOriginEl.style.width;
       let dropElHeight =
         parseInt(getComputedStyle(dropOriginEl).height) +
-        parseInt(getComputedStyle(dropOriginEl).marginTop) +
-        parseInt(getComputedStyle(dropOriginEl).marginBottom);
+        parseInt(getComputedStyle(dropOriginEl).marginTop);
       let el2X = dragOriginEl.style.width;
       let dragElHeight =
         parseInt(getComputedStyle(dragOriginEl).height) +
-        parseInt(getComputedStyle(dragOriginEl).marginTop) +
-        parseInt(getComputedStyle(dragOriginEl).marginBottom);
+        parseInt(getComputedStyle(dragOriginEl).marginTop);
 
       this.#currentDropIndex = this.#domNodeList.findIndex(
         (el) => dropOriginEl.innerHTML == el.innerHTML
@@ -118,31 +116,38 @@ class SortAndSwap {
         (el) => el.innerHTML == dragOriginEl.innerHTML
       );
 
-      if (e.y < this.#pointer.y) {
-        log("up");
+      this.#domNodeList.forEach((el, i) => {
+        // select the dropNode from the container.children list
+        let currentDropNode = [...this.#container.children].filter(
+          (containerNode) => containerNode.innerHTML == el.innerHTML
+        )[0];
 
-        // el2.style.translate = "0px " + (-el2Y - el2Y * (I2 - I1 - 1)) + "px";
-        log(
-          -dragElHeight -
-            dragElHeight * (dragOriginElIndex - this.#currentDragIndex)
-        );
-        dropOriginEl.style.translate = "0px " + dropElHeight + "px";
-        dragOriginEl.style.translate =
-          "0px " +
-          (
-            -dragElHeight -
-            dragElHeight * (dragOriginElIndex - this.#currentDragIndex)
-          ).toString() +
-          "px";
-      } else if (e.y > this.#pointer.y) {
-        log("down");
+        let dropTranslate;
+        let dragTranslate;
 
-        dropOriginEl.style.translate = "0px " + -dropElHeight + "px";
-        dragOriginEl.style.translate =
-          "0px " +
-          (dragElHeight + dragElHeight * (this.#currentDropIndex - 1)) +
-          "px";
-      }
+        if (e.y < this.#pointer.y) {
+          // if drag direction is UP:
+          log("up");
+          if (this.#currentDropIndex <= i && i <= this.#currentDragIndex) {
+            dropTranslate = dropElHeight;
+            dragTranslate =
+              dragElHeight * (this.#currentDropIndex - dragOriginElIndex);
+          }
+        }
+
+        if (e.y > this.#pointer.y) {
+          // if drag direction is DOWN:
+          log("down");
+          if (this.#currentDropIndex >= i && i >= this.#currentDragIndex) {
+            dropTranslate = -dropElHeight;
+            dragTranslate =
+              dragElHeight * (this.#currentDropIndex - dragOriginElIndex);
+          }
+        }
+
+        currentDropNode.style.translate = "0px " + dropTranslate + "px";
+        dragOriginEl.style.translate = "0px " + dragTranslate + "px";
+      });
 
       this.#updateSortOrder(0, e.y);
     });
@@ -160,9 +165,7 @@ class SortAndSwap {
     this.#dragEl.style.top = this.#elStartPoint.y + offSetY + "px";
   }
 
-  #mouseOverHandler(e, el) {}
-
-  #mouseDownHandler(e, el) {
+  #pointerDownHandler(e, el) {
     this.#cloneOrigin = el;
     let clone = el.cloneNode(true);
     clone.classList.add("dragActive");
@@ -184,7 +187,7 @@ class SortAndSwap {
     this.#elStartPoint.y = el.offsetTop;
   }
 
-  #mouseUpHandler() {
+  #pointerUpHandler() {
     if (this.#dragInMotion) {
       this.#container.removeChild(this.#dragEl);
       this.#updateDom();
@@ -200,12 +203,11 @@ class SortAndSwap {
     [...this.#container.children].forEach((el, i) => {
       this.#domNodeList.push(el.cloneNode(true));
       el.dataset.sortindex = i;
-      el.addEventListener("mousedown", (e) => this.#mouseDownHandler(e, el));
-      el.addEventListener("mouseover", (e, el) =>
-        this.#mouseOverHandler(e, el)
+      el.addEventListener("pointerdown", (e) =>
+        this.#pointerDownHandler(e, el)
       );
       el.style.translate = "0px 0px";
-      el.style.transition = "translate 0.35s ease-out";
+      el.style.transition = "all 0.25s ease-out";
       this.#sortOrder.push({
         index: i,
         indexOrigin: i,
@@ -213,8 +215,12 @@ class SortAndSwap {
         y: el.offsetTop,
       });
     });
-    document.addEventListener("mousemove", (e) => this.#mouseMoveHandler(e));
-    document.addEventListener("mouseup", () => this.#mouseUpHandler());
+    this.#container.addEventListener("pointermove", (e) =>
+      this.#pointerMoveHandler(e)
+    );
+    this.#container.addEventListener("pointerup", () =>
+      this.#pointerUpHandler()
+    );
   }
 }
 
