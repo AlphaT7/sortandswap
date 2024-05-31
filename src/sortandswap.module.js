@@ -1,6 +1,6 @@
 const $ = document.querySelector.bind(document);
 
-const SortAndSwap = class {
+export default class SortAndSwap {
   constructor(dataObj) {
     this.container = $("#" + dataObj.containerId);
     this.dragActiveClass = dataObj.dragActiveClass;
@@ -146,6 +146,4 @@ const SortAndSwap = class {
       }
     }
   }
-};
-
-export default class SortAndSwap;
+}
