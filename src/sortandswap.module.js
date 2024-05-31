@@ -148,4 +148,4 @@ const SortAndSwap = class {
   }
 };
 
-export default SortAndSwap;
+export default class SortAndSwap;
