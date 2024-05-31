@@ -10,7 +10,7 @@ export default class SortAndSwap {
   }
 
   dropZone(e) {
-    for (const node of container.children) {
+    for (const node of this.container.children) {
       if (node.contains(e.target)) return node;
     }
   }
@@ -44,28 +44,28 @@ export default class SortAndSwap {
     let dropEl = $(`[data-sortindex='${dropSortIndex}']`);
 
     let dragNodeIndex = () => {
-      return [...container.children].findIndex(
+      return [...this.container.children].findIndex(
         (el) => el.dataset.sortindex == dragSortIndex
       );
     };
 
     let dropNodeIndex = () => {
-      return [...container.children].findIndex(
+      return [...this.container.children].findIndex(
         (el) => el.dataset.sortindex == dropSortIndex
       );
     };
 
     const swap = () => {
       let index =
-        container.children.item(dragSortIndex) ==
-        container.children.lastElementChild
+        this.container.children.item(dragSortIndex) ==
+        this.container.children.lastElementChild
           ? null
           : dragNodeIndex();
       let dropClone = dropEl.cloneNode(true);
       this.addListeners(dropClone);
-      container.replaceChild(dragEl, dropEl);
-      let referenceNode = index == null ? null : container.children.item(index);
-      container.insertBefore(dropClone, referenceNode);
+      this.container.replaceChild(dragEl, dropEl);
+      let referenceNode = index == null ? null : this.container.children.item(index);
+      this.container.insertBefore(dropClone, referenceNode);
     };
 
     const sort = () => {
@@ -124,7 +124,7 @@ export default class SortAndSwap {
   }
 
   init() {
-    [...container.children].forEach((el, i) => {
+    [...this.container.children].forEach((el, i) => {
       el.setAttribute("draggable", true);
       el.dataset.sortindex = i;
       this.addListeners(el);
