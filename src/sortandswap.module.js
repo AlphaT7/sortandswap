@@ -40,8 +40,12 @@ export default class SortAndSwap {
     let dragSortIndex = +dragTarget.dataset.sortindex;
     let dropSortIndex = +dropTarget.dataset.sortindex;
 
-    let dragEl = $(`[data-sortindex='${dragSortIndex}']`);
-    let dropEl = $(`[data-sortindex='${dropSortIndex}']`);
+    let dragEl = this.container.querySelector(
+      `[data-sortindex='${dragSortIndex}']`
+    );
+    let dropEl = this.container.querySelector(
+      `[data-sortindex='${dropSortIndex}']`
+    );
 
     let dragNodeIndex = () => {
       return [...this.container.children].findIndex(
@@ -64,7 +68,8 @@ export default class SortAndSwap {
       let dropClone = dropEl.cloneNode(true);
       this.addListeners(dropClone);
       this.container.replaceChild(dragEl, dropEl);
-      let referenceNode = index == null ? null : this.container.children.item(index);
+      let referenceNode =
+        index == null ? null : this.container.children.item(index);
       this.container.insertBefore(dropClone, referenceNode);
     };
 
